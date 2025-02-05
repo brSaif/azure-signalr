@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
@@ -27,7 +28,9 @@ internal partial class ServiceConnection : ServiceConnectionBase
 
     // Fix issue: https://github.com/Azure/azure-signalr/issues/198
     // .NET Framework has restriction about reserved string as the header name like "User-Agent"
-    private static readonly Dictionary<string, string> CustomHeader = new Dictionary<string, string> { { Constants.AsrsUserAgent, ProductInfo.GetProductInfo() } };
+    private readonly Dictionary<string, string> _customHeader = new() {
+        { Constants.AsrsUserAgent, ProductInfo.GetProductInfo() }
+    };
 
     private readonly IConnectionFactory _connectionFactory;
 
@@ -35,8 +38,7 @@ internal partial class ServiceConnection : ServiceConnectionBase
 
     private readonly IClientConnectionManager _clientConnectionManager;
 
-    private readonly ConcurrentDictionary<string, string> _connectionIds =
-        new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, string> _connectionIds = new(StringComparer.Ordinal);
 
     private readonly string[] _pingMessages =
         new string[4] { ClientConnectionCountInHub, null, ClientConnectionCountInServiceConnection, null };
@@ -64,7 +66,8 @@ internal partial class ServiceConnection : ServiceConnectionBase
                              IHubProtocolResolver hubProtocolResolver,
                              ServiceConnectionType connectionType = ServiceConnectionType.Default,
                              GracefulShutdownMode mode = GracefulShutdownMode.Off,
-                             bool allowStatefulReconnects = false)
+                             bool allowStatefulReconnects = false,
+                             ICustomHeaderProvider customHeaderProvider = null)
         : base(serviceProtocol,
                serverId,
                connectionId,
@@ -83,6 +86,11 @@ internal partial class ServiceConnection : ServiceConnectionBase
         _clientConnectionFactory = clientConnectionFactory;
         _clientInvocationManager = clientInvocationManager;
         _hubProtocolResolver = hubProtocolResolver;
+
+        foreach (var (key, val) in customHeaderProvider?.Headers)
+        {
+            _customHeader.Add(key, val);
+        }
     }
 
     public override bool TryAddClientConnection(IClientConnection connection)
@@ -100,16 +108,6 @@ internal partial class ServiceConnection : ServiceConnectionBase
         _clientInvocationManager.CleanupInvocationsByConnection(connectionId);
 #endif
         return r;
-    }
-
-    protected override Task<ConnectionContext> CreateConnection(string target = null)
-    {
-        return _connectionFactory.ConnectAsync(HubEndpoint, TransferFormat.Binary, ConnectionId, target, headers: CustomHeader);
-    }
-
-    protected override Task DisposeConnection(ConnectionContext connection)
-    {
-        return _connectionFactory.DisposeAsync(connection);
     }
 
     public override async Task CloseClientConnections(CancellationToken token)
@@ -135,6 +133,16 @@ internal partial class ServiceConnection : ServiceConnectionBase
         {
             await Task.WhenAll(tasks);
         }
+    }
+
+    protected override Task<ConnectionContext> CreateConnection(string target = null)
+    {
+        return _connectionFactory.ConnectAsync(HubEndpoint, TransferFormat.Binary, ConnectionId, target, headers: _customHeader);
+    }
+
+    protected override Task DisposeConnection(ConnectionContext connection)
+    {
+        return _connectionFactory.DisposeAsync(connection);
     }
 
     protected override Task CleanupClientConnections(string fromInstanceId = null)
@@ -386,5 +394,4 @@ internal partial class ServiceConnection : ServiceConnectionBase
         }
         return Task.CompletedTask;
     }
-
 }

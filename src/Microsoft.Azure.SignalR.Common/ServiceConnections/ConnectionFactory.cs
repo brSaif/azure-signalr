@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -6,22 +6,18 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Azure.SignalR;
 
-internal class ConnectionFactory : IConnectionFactory
+internal class ConnectionFactory(IServerNameProvider nameProvider,
+                                 ILoggerFactory loggerFactory) : IConnectionFactory
 {
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILoggerFactory _loggerFactory = loggerFactory != null ? new GracefulLoggerFactory(loggerFactory) : throw new ArgumentNullException(nameof(loggerFactory));
 
-    private readonly string _serverId;
-
-    public ConnectionFactory(IServerNameProvider nameProvider, ILoggerFactory loggerFactory)
-    {
-        _loggerFactory = loggerFactory != null ? new GracefulLoggerFactory(loggerFactory) : throw new ArgumentNullException(nameof(loggerFactory));
-        _serverId = nameProvider?.GetName();
-    }
+    private readonly string _serverId = nameProvider?.GetName();
 
     public async Task<ConnectionContext> ConnectAsync(HubServiceEndpoint hubServiceEndpoint,
                                                       TransferFormat transferFormat,

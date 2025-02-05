@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
@@ -449,6 +449,7 @@ internal abstract partial class ServiceConnectionBase : IServiceConnection
         {
             serviceConnection.TryRemoveClientConnection(clientConnection.ConnectionId, out _);
         }
+
         if (TryAddClientConnection(clientConnection))
         {
             clientConnection.ServiceConnection = this;

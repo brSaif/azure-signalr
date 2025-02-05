@@ -1,4 +1,8 @@
-﻿using System;
+// Copyright (c) Microsoft. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+using System;
+
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
@@ -26,7 +30,7 @@ internal class ServiceConnectionFactory : IServiceConnectionFactory
     private readonly IServiceEventHandler _serviceEventHandler;
 
     private readonly IClientInvocationManager _clientInvocationManager;
-
+    private readonly ICustomHeaderProvider _customHeaderProvider;
     private readonly IHubProtocolResolver _hubProtocolResolver;
 
     public GracefulShutdownMode ShutdownMode { get; set; } = GracefulShutdownMode.Off;
@@ -45,6 +49,7 @@ internal class ServiceConnectionFactory : IServiceConnectionFactory
         IServerNameProvider nameProvider,
         IServiceEventHandler serviceEventHandler,
         IClientInvocationManager clientInvocationManager,
+        ICustomHeaderProvider customHeaderProvider,
         IHubProtocolResolver hubProtocolResolver)
     {
         _serviceProtocol = serviceProtocol;
@@ -56,10 +61,14 @@ internal class ServiceConnectionFactory : IServiceConnectionFactory
         _nameProvider = nameProvider;
         _serviceEventHandler = serviceEventHandler;
         _clientInvocationManager = clientInvocationManager;
+        _customHeaderProvider = customHeaderProvider;
         _hubProtocolResolver = hubProtocolResolver;
     }
 
-    public virtual IServiceConnection Create(HubServiceEndpoint endpoint, IServiceMessageHandler serviceMessageHandler, AckHandler ackHandler, ServiceConnectionType type)
+    public virtual IServiceConnection Create(HubServiceEndpoint endpoint,
+                                             IServiceMessageHandler serviceMessageHandler,
+                                             AckHandler ackHandler,
+                                             ServiceConnectionType type)
     {
         return new ServiceConnection(
             _serviceProtocol,
@@ -77,7 +86,8 @@ internal class ServiceConnectionFactory : IServiceConnectionFactory
             _hubProtocolResolver,
             type,
             ShutdownMode,
-            allowStatefulReconnects: AllowStatefulReconnects
+            AllowStatefulReconnects,
+            _customHeaderProvider
         )
         {
             ConfigureContext = ConfigureContext

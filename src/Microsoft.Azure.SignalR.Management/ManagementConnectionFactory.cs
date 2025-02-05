@@ -1,26 +1,27 @@
-﻿// Copyright (c) Microsoft. All rights reserved.
+// Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Azure.SignalR.Management
 {
-    internal class ManagementConnectionFactory : IConnectionFactory
+    internal class ManagementConnectionFactory(IOptions<ServiceManagerOptions> context,
+                                               ConnectionFactory connectionFactory) : IConnectionFactory
     {
-        private readonly string _productInfo;
-        private readonly ConnectionFactory _connectionFactory;
+        private readonly string _productInfo = context.Value.ProductInfo;
+        private readonly ConnectionFactory _connectionFactory = connectionFactory;
 
-        public ManagementConnectionFactory(IOptions<ServiceManagerOptions> context, ConnectionFactory connectionFactory)
-        {
-            _productInfo = context.Value.ProductInfo;
-            _connectionFactory = connectionFactory;
-        }
-
-        public Task<ConnectionContext> ConnectAsync(HubServiceEndpoint endpoint, TransferFormat transferFormat, string connectionId, string target, CancellationToken cancellationToken = default, IDictionary<string, string> headers = null)
+        public Task<ConnectionContext> ConnectAsync(HubServiceEndpoint endpoint,
+                                                    TransferFormat transferFormat,
+                                                    string connectionId,
+                                                    string target,
+                                                    CancellationToken cancellationToken = default,
+                                                    IDictionary<string, string> headers = null)
         {
             if (headers == null)
             {

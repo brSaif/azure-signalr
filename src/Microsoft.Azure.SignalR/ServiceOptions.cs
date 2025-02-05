@@ -6,9 +6,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Net;
 using System.Security.Claims;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+
 #nullable enable
+
 namespace Microsoft.Azure.SignalR
 {
     /// <summary>
@@ -22,8 +25,8 @@ namespace Microsoft.Azure.SignalR
         public string? ConnectionString { get; set; }
 
         /// <summary>
-        /// Gets or sets the initial number of connections per hub from SDK to Azure SignalR Service. Default value is 5. 
-        /// Usually keep it as the default value is enough. During runtime, the SDK might start new server connections for performance tuning or load balancing. 
+        /// Gets or sets the initial number of connections per hub from SDK to Azure SignalR Service. Default value is 5.
+        /// Usually keep it as the default value is enough. During runtime, the SDK might start new server connections for performance tuning or load balancing.
         /// When you have big number of clients, you can give it a larger number for better throughput.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -36,14 +39,14 @@ namespace Microsoft.Azure.SignalR
 
         /// <summary>
         /// Gets or sets the initial number of connections per hub from SDK to Azure SignalR Service.
-        /// Default value is 5. 
+        /// Default value is 5.
         /// Usually keep it as the default value is enough. When you have big number of clients, you can give it a larger number for better throughput.
-        /// During runtime, the SDK might start new server connections for performance tuning or load balancing. 
+        /// During runtime, the SDK might start new server connections for performance tuning or load balancing.
         /// </summary>
         public int InitialHubServerConnectionCount { get; set; } = 5;
 
         /// <summary>
-        /// Specifies the max server connection count allowed per hub from SDK to Azure SignalR Service. 
+        /// Specifies the max server connection count allowed per hub from SDK to Azure SignalR Service.
         /// During runtime, the SDK might start new server connections for performance tuning or load balancing.
         /// By default a new server connection starts whenever needed.
         /// When the max allowed server connection count is configured, the SDK does not start new connections when server connection count reaches the limit.
@@ -51,7 +54,7 @@ namespace Microsoft.Azure.SignalR
         public int? MaxHubServerConnectionCount { get; set; }
 
         /// <summary>
-        /// Gets applicationName, which will be used as a prefix to apply to each hub name. 
+        /// Gets applicationName, which will be used as a prefix to apply to each hub name.
         /// Should be prefixed with alphabetic characters and only contain alpha-numeric characters or underscore.
         /// </summary>
         public string? ApplicationName { get; set; }

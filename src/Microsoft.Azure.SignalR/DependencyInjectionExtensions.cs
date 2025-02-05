@@ -92,20 +92,21 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             builder.Services
                 .PostConfigure<ServiceOptions>(o => o.Validate())
+                .AddSingleton(typeof(AzureSignalRMarkerService))
                 .AddSingleton(typeof(HubLifetimeManager<>), typeof(ServiceLifetimeManager<>))
-                .AddSingleton(typeof(IServiceProtocol), typeof(ServiceProtocol))
+                .AddSingleton(typeof(IBlazorDetector), typeof(DefaultBlazorDetector))
                 .AddSingleton(typeof(IClientConnectionManager), typeof(ClientConnectionManager))
+                .AddSingleton(typeof(IConnectionFactory), typeof(ConnectionFactory))
+                .AddSingleton(typeof(IServerNameProvider), typeof(DefaultServerNameProvider))
                 .AddSingleton(typeof(IServiceConnectionManager<>), typeof(ServiceConnectionManager<>))
                 .AddSingleton(typeof(IServiceEndpointManager), typeof(ServiceEndpointManager))
-                .AddSingleton(typeof(IServerNameProvider), typeof(DefaultServerNameProvider))
-                .AddSingleton(typeof(IBlazorDetector), typeof(DefaultBlazorDetector))
-                .AddSingleton(typeof(IConnectionFactory), typeof(ConnectionFactory))
-                .AddSingleton(typeof(ServiceHubDispatcher<>))
+                .AddSingleton(typeof(IServiceProtocol), typeof(ServiceProtocol))
+                .AddSingleton(typeof(NegotiateHandler<>))
                 .AddSingleton(typeof(ServerLifetimeManager))
-                .AddSingleton(typeof(AzureSignalRMarkerService))
+                .AddSingleton(typeof(ServiceHubDispatcher<>))
                 .AddSingleton<IClientConnectionFactory, ClientConnectionFactory>()
-                .AddSingleton<IHostedService, HeartBeat>()
-                .AddSingleton(typeof(NegotiateHandler<>));
+                .AddSingleton<ICustomHeaderProvider, DefaultHeaderProvider>()
+                .AddSingleton<IHostedService, HeartBeat>();
 
             // If a custom router is added, do not add the default router
             builder.Services.TryAddSingleton(typeof(IEndpointRouter), typeof(DefaultEndpointRouter));
